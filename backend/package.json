@@ -1,0 +1,33 @@
+{
+  "name": "web-comercial-backend",
+  "version": "1.0.0",
+  "description": "Drogamais Web Comercial - Backend Fastify",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "@fastify/multipart": "^8.3.0",
+    "@prisma/client": "^5.22.0",
+    "fastify": "^4.28.1",
+    "fastify-plugin": "^4.5.1",
+    "jose": "^5.9.6",
+    "mysql2": "^3.11.3",
+    "pino-pretty": "^11.3.0",
+    "xlsx": "^0.18.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

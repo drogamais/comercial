@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+  banco_teste:
+    image: mariadb:11.4
+    container_name: comercial_db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
+      MARIADB_DATABASE: ${DB_NAME:-comercial_dev}
+      MARIADB_USER: ${DB_USER:-app}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-apppass}
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: comercial_backend
+    restart: unless-stopped
+    depends_on:
+      banco_teste:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: ${DATABASE_URL}
+      DB_HOST: ${DB_HOST:-banco_teste}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-comercial_dev}
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-rootpass}
+      EMBEDDED_API_KEY: ${EMBEDDED_API_KEY:-}
+      REQUIRE_AUTH: ${REQUIRE_AUTH:-false}
+      AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER:-}
+      AUTHENTIK_CLIENT_ID: ${AUTHENTIK_CLIENT_ID:-}
+      AUTHENTIK_CLIENT_SECRET: ${AUTHENTIK_CLIENT_SECRET:-}
+      UPLOAD_FOLDER: ${UPLOAD_FOLDER:-/mnt/contratos}
+      DELETE_PASSWORD: ${DELETE_PASSWORD:-com123}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - contratos_volume:/mnt/contratos
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: comercial_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001}
+      VITE_REQUIRE_AUTH: ${REQUIRE_AUTH:-false}
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  db_data:
+  contratos_volume:

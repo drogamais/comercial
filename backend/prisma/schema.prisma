@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Parceiro {
+  id              Int           @id @default(autoincrement())
+  apiUserId       String?       @map("api_user_id") @db.VarChar(50)
+  nomeAjustado    String        @map("nome_ajustado") @db.VarChar(255)
+  tipo            TipoParceiro?
+  cnpj            String?       @db.VarChar(20)
+  nomeFantasia    String?       @map("nome_fantasia") @db.VarChar(255)
+  razaoSocial     String?       @map("razao_social") @db.VarChar(255)
+  gestor          String?       @db.VarChar(255)
+  telefoneGestor  String?       @map("telefone_gestor") @db.VarChar(20)
+  emailGestor     String?       @map("email_gestor") @db.VarChar(255)
+  dataEntrada     DateTime?     @map("data_entrada") @db.Date
+  dataSaida       DateTime?     @map("data_saida") @db.Date
+  status          Int           @default(1) @db.TinyInt
+  senhaDefinida   Int           @default(0) @map("senha_definida") @db.TinyInt
+  contratoArquivo String?       @map("contrato_arquivo") @db.VarChar(255)
+  dataAtualizacao DateTime      @default(now()) @updatedAt @map("data_atualizacao") @db.DateTime(3)
+
+  campanhas Campanha[]
+
+  @@index([apiUserId])
+  @@map("dim_parceiros")
+}
+
+enum TipoParceiro {
+  INDUSTRIA
+  DISTRIBUIDOR
+}
+
+model Campanha {
+  id              Int               @id @default(autoincrement())
+  nome            String            @db.VarChar(255)
+  dataInicio      DateTime          @map("data_inicio") @db.Date
+  dataFim         DateTime          @map("data_fim") @db.Date
+  status          Int               @default(1)
+  parceiroId      Int?              @map("parceiro_id")
+  parceiro        Parceiro?         @relation(fields: [parceiroId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  dataAtualizacao DateTime          @default(now()) @updatedAt @map("data_atualizacao") @db.DateTime(3)
+
+  produtos CampanhaProduto[]
+
+  @@unique([nome, dataInicio, dataFim])
+  @@map("dim_campanha")
+}
+
+model CampanhaProduto {
+  id                      Int       @id @default(autoincrement())
+  campanhaId              Int       @map("campanha_id")
+  campanha                Campanha  @relation(fields: [campanhaId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  codigoBarras            String?   @map("codigo_barras") @db.VarChar(14)
+  codigoBarrasNormalizado String?   @map("codigo_barras_normalizado") @db.VarChar(14)
+  codigoInterno           String?   @map("codigo_interno") @db.VarChar(14)
+  descricao               String?   @db.Text
+  precoNormal             Decimal?  @map("preco_normal") @db.Decimal(10, 2)
+  precoDesconto           Decimal?  @map("preco_desconto") @db.Decimal(10, 2)
+  dataAtualizacao         DateTime  @default(now()) @updatedAt @map("data_atualizacao") @db.DateTime(3)
+  laboratorio             String?   @db.VarChar(255)
+  tipoPreco               String?   @map("tipo_preco") @db.VarChar(100)
+  precoDescontoCliente    Decimal?  @map("preco_desconto_cliente") @db.Decimal(10, 2)
+  precoApp                Decimal?  @map("preco_app") @db.Decimal(10, 2)
+  tipoRegra               String?   @map("tipo_regra") @db.VarChar(100)
+  pontuacao               Int?
+  rebaixe                 Decimal?  @db.Decimal(10, 2)
+  qtdLimite               Int?      @map("qtd_limite")
+
+  @@map("dim_campanha_produto")
+}
