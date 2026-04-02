@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Megaphone, 
-  Users, 
+import {
+  LayoutDashboard,
+  Megaphone,
+  Users,
   LogOut,
   ChevronRight,
-  Store
+  Store,
+  Target
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
@@ -21,6 +22,7 @@ const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { to: '/campanhas', label: 'Campanhas', icon: Megaphone },
   { to: '/parceiros', label: 'Parceiros', icon: Users },
+  { to: '/metas', label: 'Metas', icon: Target },
 ];
 
 export function Sidebar() {
